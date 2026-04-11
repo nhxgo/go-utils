@@ -46,3 +46,16 @@ func FromContext(ctx context.Context) *Context {
 func GetContext(r *http.Request) *Context {
 	return FromContext(r.Context())
 }
+
+type contextKey string
+
+const userKey contextKey = "user"
+
+func GetUser[T any](r *http.Request) (T, bool) {
+	user, ok := r.Context().Value(userKey).(T)
+	return user, ok
+}
+
+func SetUser[T any](r *http.Request, user T) *http.Request {
+	return r.WithContext(context.WithValue(r.Context(), userKey, user))
+}
