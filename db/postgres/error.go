@@ -33,5 +33,5 @@ func PostgresError(message string, err error) errx.Error {
 		}
 	}
 
-	return errx.InternalServerError(err)
+	return errx.InternalServerError(fmt.Errorf("%v :%v", message, err))
 }
