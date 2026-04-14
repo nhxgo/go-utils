@@ -10,7 +10,7 @@ import (
 
 var validate = validator.New()
 
-func Validate(v any) errx.Error {
+func Validate(v any) error {
 	if err := validate.Struct(v); err != nil {
 		errs, ok := err.(validator.ValidationErrors)
 		if !ok {

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/nhxgo/go-utils/errx"
@@ -13,21 +14,21 @@ type ErrorResponse struct {
 	Code    string `json:"code,omitempty"`
 }
 
-func ErrorJSON(w http.ResponseWriter, ctx *request.Context, err errx.Error) {
+func ErrorJSON(w http.ResponseWriter, ctx *request.Context, err error) {
 	if err == nil {
 		return
 	}
-	if ctx != nil {
-		ctx.Error(err.Message, "status", err.HttpStatus, "code", string(err.ErrorCode), "error", err.Description)
-	} else {
-		logger.Error(err.Message, "status", err.HttpStatus, "code", string(err.ErrorCode), "error", err.Description)
-	}
-	JSON(w, err.HttpStatus, ErrorResponse{Message: err.Message, Code: string(err.ErrorCode)})
-}
 
-func Error(w http.ResponseWriter, err errx.Error) {
-	if err == nil {
-		return
+	var apiErr *errx.Error
+	if errors.As(err, &apiErr) {
+		if ctx != nil {
+			ctx.Error(apiErr.Message, "status", apiErr.HttpStatus, "code", string(apiErr.ErrorCode), "error", apiErr.Err)
+		} else {
+			logger.Error(apiErr.Message, "status", apiErr.HttpStatus, "code", string(apiErr.ErrorCode), "error", apiErr.Err)
+		}
+		JSON(w, apiErr.HttpStatus, ErrorResponse{Message: apiErr.Message, Code: string(apiErr.ErrorCode)})
+	} else {
+		JSON(w, http.StatusInternalServerError, ErrorResponse{Message: err.Error()})
 	}
-	JSON(w, err.HttpStatus, ErrorResponse{Message: err.Message, Code: string(err.ErrorCode)})
+
 }

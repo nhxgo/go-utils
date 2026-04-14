@@ -7,7 +7,7 @@ import (
 	"github.com/nhxgo/go-utils/errx"
 )
 
-func GetBody(r *http.Request, v any) errx.Error {
+func GetBody(r *http.Request, v any) error {
 	if r.Body == nil {
 		return errx.BadRequestError(nil, "request body is required")
 	}
@@ -27,7 +27,7 @@ func GetBody(r *http.Request, v any) errx.Error {
 	return nil
 }
 
-func GetBodyAndValidate(r *http.Request, v any) errx.Error {
+func GetBodyAndValidate(r *http.Request, v any) error {
 	if r.Body == nil {
 		return errx.BadRequestError(nil, "request body is required")
 	}

@@ -7,109 +7,122 @@ import (
 
 type ApiError string
 
-type errorImpl struct {
-	HttpStatus  int
-	ErrorCode   ApiError
-	Description error
-	Message     string
+type Error struct {
+	HttpStatus int
+	ErrorCode  ApiError
+	Message    string
+	Err        error
 }
-type Error *errorImpl
 
-var (
-	DecryptError       = errors.New("Failed to Decrypt")
-	EncryptError       = errors.New("Failed to Encrypt")
-	WrongPasswordError = errors.New("Wrong password")
-)
+func (e *Error) Error() string {
+	return "[" + string(e.ErrorCode) + "] " + e.Message
+}
 
-const (
-	UnknownError ApiError = "UNKNOWN_ERROR"
-	Empty        ApiError = ""
+func (e *Error) Unwrap() error {
+	return e.Err
+}
 
-	internalServer ApiError = "INTERNAL_SERVER_ERROR"
-	notFound       ApiError = "NOT_FOUND"
-	unauthorized   ApiError = "UNAUTHORIZED"
-	badRequest     ApiError = "BAD_REQUEST"
-	conflict       ApiError = "CONFLICT"
+// ------------------------utils
 
-	UnprocessableEntity ApiError = "UNPROCESSABLE_ENTITY"
-	ValidationError     ApiError = "VALIDATION_ERROR"
-	methodNotAllowed    ApiError = "METHOD_NOT_ALLOWED"
-
-	// Database
-	DBError               ApiError = "DATABASE_ERROR"
-	DBUniqueViolation     ApiError = "DB_UNIQUE_VIOLATION"
-	DBForeignKeyViolation ApiError = "DB_FOREIGN_KEY_VIOLATION"
-	DBNotFound            ApiError = "DB_NOT_FOUND"
-	DBTimeout             ApiError = "DB_TIMEOUT"
-	DBConnectionFailed    ApiError = "DB_CONNECTION_FAILED"
-
-	UserNotFound ApiError = "USER_NOT_FOUND"
-
-	// Business Logic
-	InvalidCredentials ApiError = "INVALID_CREDENTIALS"
-	UserAlreadyExists  ApiError = "USER_ALREADY_EXISTS"
-	PermissionDenied   ApiError = "PERMISSION_DENIED"
-)
-
-func NewError(HttpStatus int, errorCode ApiError, message string, description error) Error {
-	return &errorImpl{
-		HttpStatus:  HttpStatus,
-		ErrorCode:   errorCode,
-		Description: description,
-		Message:     message,
+func NewError(httpStatus int, errorCode ApiError, message string, err error) error {
+	return &Error{
+		HttpStatus: httpStatus,
+		ErrorCode:  errorCode,
+		Message:    message,
+		Err:        err,
 	}
 }
 
-func InternalServerError(description error) Error {
-	return &errorImpl{
-		HttpStatus:  http.StatusInternalServerError,
-		ErrorCode:   internalServer,
-		Description: description,
-		Message:     "Internal Server Error",
+// HTTP helpers
+
+func InternalServerError(err error) error {
+	return &Error{
+		HttpStatus: http.StatusInternalServerError,
+		ErrorCode:  InternalServerErrorCode,
+		Message:    "internal server error",
+		Err:        err,
 	}
 }
 
-func ConflictError(description error, message string) Error {
-	return &errorImpl{
-		HttpStatus:  http.StatusConflict,
-		ErrorCode:   conflict,
-		Description: description,
-		Message:     message,
+func ConflictError(err error, message string) error {
+	return &Error{
+		HttpStatus: http.StatusConflict,
+		ErrorCode:  ConflictCode,
+		Message:    message,
+		Err:        err,
 	}
 }
 
-func NotFoundError(description error, message string) Error {
-	return &errorImpl{
-		HttpStatus:  http.StatusNotFound,
-		ErrorCode:   notFound,
-		Description: description,
-		Message:     message,
+func NotFoundError(err error, message string) error {
+	return &Error{
+		HttpStatus: http.StatusNotFound,
+		ErrorCode:  NotFoundCode,
+		Message:    message,
+		Err:        err,
 	}
 }
 
-func MethodNotAllowedError(description error) Error {
-	return &errorImpl{
-		HttpStatus:  http.StatusMethodNotAllowed,
-		ErrorCode:   methodNotAllowed,
-		Description: description,
-		Message:     "Method Not Allowed",
+func MethodNotAllowedError(err error) error {
+	return &Error{
+		HttpStatus: http.StatusMethodNotAllowed,
+		ErrorCode:  MethodNotAllowedCode,
+		Message:    "method not allowed",
+		Err:        err,
 	}
 }
 
-func BadRequestError(description error, message string) Error {
-	return &errorImpl{
-		HttpStatus:  http.StatusBadRequest,
-		ErrorCode:   badRequest,
-		Description: description,
-		Message:     message,
+func BadRequestError(err error, message string) error {
+	return &Error{
+		HttpStatus: http.StatusBadRequest,
+		ErrorCode:  BadRequestCode,
+		Message:    message,
+		Err:        err,
 	}
 }
 
-func UnauthorizedError(description error, message string) Error {
-	return &errorImpl{
-		HttpStatus:  http.StatusUnauthorized,
-		ErrorCode:   unauthorized,
-		Description: description,
-		Message:     message,
+func UnauthorizedError(err error, message string) error {
+	return &Error{
+		HttpStatus: http.StatusUnauthorized,
+		ErrorCode:  UnauthorizedCode,
+		Message:    message,
+		Err:        err,
+	}
+}
+
+func TooManyRequestError(err error) error {
+	return &Error{
+		HttpStatus: http.StatusTooManyRequests,
+		ErrorCode:  TooManyRequestsCode,
+		Message:    "too many requests, please try again later",
+		Err:        err,
+	}
+}
+
+// Crypto / hashing
+
+func NewDecryptError(err error) error {
+	return &Error{
+		HttpStatus: http.StatusInternalServerError,
+		ErrorCode:  InternalServerErrorCode,
+		Message:    "failed to decrypt data",
+		Err:        errors.Join(ErrDecryptFailed, err),
+	}
+}
+
+func NewEncryptError(err error) error {
+	return &Error{
+		HttpStatus: http.StatusInternalServerError,
+		ErrorCode:  InternalServerErrorCode,
+		Message:    "failed to encrypt data",
+		Err:        errors.Join(ErrEncryptFailed, err),
+	}
+}
+
+func NewHashingError(err error) error {
+	return &Error{
+		HttpStatus: http.StatusInternalServerError,
+		ErrorCode:  InternalServerErrorCode,
+		Message:    "failed to hash data",
+		Err:        errors.Join(ErrHashingFailed, err),
 	}
 }
