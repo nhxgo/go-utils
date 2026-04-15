@@ -1,1 +1,3 @@
 # go-utils
+
+go test ./...
