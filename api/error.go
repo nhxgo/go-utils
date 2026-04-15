@@ -30,5 +30,17 @@ func ErrorJSON(w http.ResponseWriter, ctx *request.Context, err error) {
 	} else {
 		JSON(w, http.StatusInternalServerError, ErrorResponse{Message: err.Error()})
 	}
+}
 
+func Error(w http.ResponseWriter, err error) {
+	if err == nil {
+		return
+	}
+
+	var apiErr *errx.Error
+	if errors.As(err, &apiErr) {
+		JSON(w, apiErr.HttpStatus, ErrorResponse{Message: apiErr.Message, Code: string(apiErr.ErrorCode)})
+	} else {
+		JSON(w, http.StatusInternalServerError, ErrorResponse{Message: err.Error()})
+	}
 }
