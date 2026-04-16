@@ -22,6 +22,9 @@ func HashEmail(email string, secret string) string {
 }
 
 func HashPassword(password string, cost int) (string, error) {
+	if password==""{
+		return "", nil
+	}
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), cost)
 	if err != nil {
 		return "", fmt.Errorf("failed to hash password: %w", err)
