@@ -98,6 +98,15 @@ func TooManyRequestError(err error) error {
 	}
 }
 
+func ForbiddenError(err error, message string) error {
+	return &Error{
+		HttpStatus: http.StatusForbidden,
+		ErrorCode:  ForbiddenCode,
+		Message:    message,
+		Err:        err,
+	}
+}
+
 // Crypto / hashing
 
 func NewDecryptError(err error) error {

@@ -28,6 +28,7 @@ const (
 	InternalServerErrorCode ApiError = "INTERNAL_SERVER_ERROR"
 	BadRequestCode          ApiError = "BAD_REQUEST"
 	UnauthorizedCode        ApiError = "UNAUTHORIZED"
+	ForbiddenCode           ApiError = "FORBIDDEN"
 	NotFoundCode            ApiError = "NOT_FOUND"
 	ConflictCode            ApiError = "CONFLICT"
 	TooManyRequestsCode     ApiError = "TOO_MANY_REQUESTS"
